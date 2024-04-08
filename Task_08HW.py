@@ -45,8 +45,22 @@ for dic in data['features']:# 從 data['features'] 取出一個 dic 資料
          #dictionary[key] = value
     else:
         med_count[conunty] += 1 #如果county在med_count中，則med_count[county] + 1
-print
-(med_count)
+#print(med_count)
+
+
+mask_count = {}
+
+# 填入欄位名稱
+for d in data['features']:
+    conunty = d['properties']['county'] #取出字典的properties與county欄位
+    adult_mask_count = d['properties']['mask_adult'] #取出字典的properties與mask_adult（成人口罩) 欄位
+
+    if conunty not in mask_count: #如果county不在mask_count中
+      mask_count[conunty] = adult_mask_count #則將county加入mask_count,設為adult_mask_count, 不會變了
+    else:
+      mask_count[conunty] += adult_mask_count #如果county在mask_count中，則mask_count[county] + adult_mask_count,持續累加總數
+
+#print(mask_count.items())
 
 #-------------------新增到資料庫內
 for city, counts in med_count.items(): 
@@ -55,10 +69,19 @@ for city, counts in med_count.items():
   print(f"INSERT INTO stocks VALUES ('{city}', {counts}, '{t}')")
   c.execute(f"INSERT INTO pharmacies VALUES ('{city}', {counts}, '{t}')")
   conn.commit()
+  
+for maskcity, maskc in mask_count.items(): 
+  #Your Code # item()把將每一筆Med_count資料的Key, value分別取出來新增到資料庫
+  t = datetime.datetime.now()
+  print(f"INSERT INTO stocks VALUES ('{maskcity}', {maskc}, '{t}')")
+  c.execute(f"INSERT INTO pharmacies VALUES ('{maskcity}', {maskc}, '{t}')")
+  conn.commit()
 
 # 查詢資料
 c.execute("SELECT * FROM pharmacies")
-print(c.fetchall())
+#print(c.fetchall())
 
+#使用 fetchone() 方法來取得查詢結果的第一筆資料
+#使用 fetchall() 方法來取得所有查詢結果的資料
 conn.commit()
 conn.close()
